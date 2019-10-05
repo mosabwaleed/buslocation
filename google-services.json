@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "877741026644",
+    "firebase_url": "https://busalarm-165dc.firebaseio.com",
+    "project_id": "busalarm-165dc",
+    "storage_bucket": "busalarm-165dc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:877741026644:android:6bfe83b69bc0377f",
+        "android_client_info": {
+          "package_name": "com.example.gl_zarqa_imac8.busalarm"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "877741026644-jreivic88r3p0g1a3qgv9i1ttjuhrjjk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.gl_zarqa_imac8.busalarm",
+            "certificate_hash": "d1261fc4db54a743e9b7fce9a7a69f0a77dcefc7"
+          }
+        },
+        {
+          "client_id": "877741026644-c2p9l19eic4qfjdiknqhd77rloosi55p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-XuYqOuqkOsozAq1QTTIVx-u4Q_e4I3c"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "877741026644-c2p9l19eic4qfjdiknqhd77rloosi55p.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
