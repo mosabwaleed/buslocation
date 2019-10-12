@@ -59,8 +59,6 @@ import java.util.Date;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-
-
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
     private static final String TAG = MainActivity.class.getSimpleName();
     @BindView(R.id.btn_start_location_updates)
@@ -72,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     double lng;
     EditText ebusnumber,eroundnumber;
     Spinner city;
+    Button stop;
 // for test
     FirebaseDatabase firebaseDatabase;
     public double getLat() {
@@ -115,6 +114,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         ebusnumber = findViewById(R.id.busnumber);
         eroundnumber = findViewById(R.id.roundnumber);
         city = findViewById(R.id.city);
+        stop = findViewById(R.id.stop);
         firebaseDatabase = FirebaseDatabase.getInstance();
         // initialize the necessary libraries
         init();
@@ -260,13 +260,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         String buno = ebusnumber.getText().toString();
         String rono = eroundnumber.getText().toString();
         if (!buno.matches("") && !rono.matches("")){
-
             ebusnumber.setVisibility(View.GONE);
             eroundnumber.setVisibility(View.GONE);
             btnStartUpdates.setVisibility(View.GONE);
+            stop.setVisibility(View.VISIBLE);
             city.setVisibility(View.GONE);
-
-
             // Requesting ACCESS_FINE_LOCATION using Dexter library
             Dexter.withActivity(this)
                     .withPermission(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -276,11 +274,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             mRequestingLocationUpdates = true;
                             startLocationUpdates();
                             onMapReady(mMap);
-
-
-
                         }
-
                         @Override
                         public void onPermissionDenied(PermissionDeniedResponse response) {
                             if (response.isPermanentlyDenied()) {
@@ -289,21 +283,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 openSettings();
                             }
                         }
-
                         @Override
                         public void onPermissionRationaleShouldBeShown(PermissionRequest permission, PermissionToken token) {
                             token.continuePermissionRequest();
                         }
                     }).check();
-
         }
         else{
             Toast.makeText(MainActivity.this,"please fill bus number and round number",Toast.LENGTH_LONG).show();
             btnStartUpdates.setEnabled(true);
-
         }
-
-
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -352,7 +341,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     @Override
     protected void onPause() {
+
         super.onPause();
+
     }
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -382,9 +373,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             btnStartUpdates.setEnabled(true);
 
         }
+    }
 
-
-
-
+    public void Stop(View view) {
+        firebaseDatabase.getReference("buses").child(city.getSelectedItem().toString()).child("bus number " + ebusnumber.getText().toString()).child("round number " + eroundnumber.getText().toString()).child("lat").removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                firebaseDatabase.getReference("buses").child(city.getSelectedItem().toString()).child("bus number " + ebusnumber.getText().toString()).child("round number " + eroundnumber.getText().toString()).child("lng").removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        ebusnumber.setVisibility(View.VISIBLE);
+                        eroundnumber.setVisibility(View.VISIBLE);
+                        btnStartUpdates.setVisibility(View.VISIBLE);
+                        stop.setVisibility(View.GONE);
+                        city.setVisibility(View.VISIBLE);
+                        ebusnumber.setText("");
+                        eroundnumber.setText("");
+                        handler.removeCallbacksAndMessages(null);
+                    }
+                });
+            }
+        });
     }
 }
