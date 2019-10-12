@@ -325,13 +325,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onResume() {
         super.onResume();
-
         // Resuming location updates depending on button state and
         // allowed permissions
         if (mRequestingLocationUpdates && checkPermissions()) {
             startLocationUpdates();
         }
-
         updateLocationUI();
     }
     private boolean checkPermissions() {
@@ -341,9 +339,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     @Override
     protected void onPause() {
-
         super.onPause();
-
     }
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -371,10 +367,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         else{
             Toast.makeText(MainActivity.this,"please fill bus number and round number",Toast.LENGTH_LONG).show();
             btnStartUpdates.setEnabled(true);
-
         }
     }
-
     public void Stop(View view) {
         firebaseDatabase.getReference("buses").child(city.getSelectedItem().toString()).child("bus number " + ebusnumber.getText().toString()).child("round number " + eroundnumber.getText().toString()).child("lat").removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
