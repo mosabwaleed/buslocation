@@ -19,6 +19,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -61,7 +62,6 @@ import butterknife.OnClick;
 
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
-
     private static final String TAG = MainActivity.class.getSimpleName();
     @BindView(R.id.btn_start_location_updates)
     Button btnStartUpdates;
@@ -71,39 +71,30 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     double lat;
     double lng;
     EditText ebusnumber,eroundnumber;
+    Spinner city;
 // for test
     FirebaseDatabase firebaseDatabase;
-
     public double getLat() {
         return lat;
     }
-
     public void setLat(double lat) {
         this.lat = lat;
     }
-
     public double getLng() {
         return lng;
     }
-
     public void setLng(double lng) {
         this.lng = lng;
     }
-
     // location last updated time
     private String mLastUpdateTime;
-
     // location updates interval - 10sec
     private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 1000;
-
     // fastest updates interval - 5 sec
     // location updates will be received if another app is requesting the locations
     // than your app can handle
     private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS = 500;
-
     private static final int REQUEST_CHECK_SETTINGS = 100;
-
-
     // bunch of location related apis
     private FusedLocationProviderClient mFusedLocationClient;
     private SettingsClient mSettingsClient;
@@ -111,10 +102,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LocationSettingsRequest mLocationSettingsRequest;
     private LocationCallback mLocationCallback;
     private Location mCurrentLocation;
-
     // boolean flag to toggle the ui
     private Boolean mRequestingLocationUpdates;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -123,21 +112,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
         ebusnumber = findViewById(R.id.busnumber);
         eroundnumber = findViewById(R.id.roundnumber);
+        city = findViewById(R.id.city);
         firebaseDatabase = FirebaseDatabase.getInstance();
-
-
-
-
         // initialize the necessary libraries
         init();
-
         // restore the values from saved instance state
         restoreValuesFromBundle(savedInstanceState);
     }
-
     private void init() {
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mSettingsClient = LocationServices.getSettingsClient(this);
@@ -165,7 +148,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         builder.addLocationRequest(mLocationRequest);
         mLocationSettingsRequest = builder.build();
     }
-
     /**
      * Restoring values from saved instance state
      */
@@ -186,8 +168,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         updateLocationUI();
     }
-
-
     /**
      * Update the UI displaying the location data
      * and toggling the buttons
@@ -209,7 +189,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         toggleButtons();
     }
-
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -218,7 +197,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         outState.putString("last_updated_on", mLastUpdateTime);
 
     }
-
     private void toggleButtons() {
         String buno = ebusnumber.getText().toString();
         String rono = eroundnumber.getText().toString();
@@ -277,7 +255,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 });
     }
-
     @OnClick(R.id.btn_start_location_updates)
     public void startLocationButtonClick() {
         String buno = ebusnumber.getText().toString();
@@ -287,6 +264,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             ebusnumber.setVisibility(View.GONE);
             eroundnumber.setVisibility(View.GONE);
             btnStartUpdates.setVisibility(View.GONE);
+            city.setVisibility(View.GONE);
 
 
             // Requesting ACCESS_FINE_LOCATION using Dexter library
@@ -327,8 +305,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
     }
-
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
@@ -347,7 +323,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 break;
         }
     }
-
     private void openSettings() {
         Intent intent = new Intent();
         intent.setAction(
@@ -358,7 +333,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
-
     @Override
     public void onResume() {
         super.onResume();
@@ -371,19 +345,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         updateLocationUI();
     }
-
     private boolean checkPermissions() {
         int permissionState = ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION);
         return permissionState == PackageManager.PERMISSION_GRANTED;
     }
-
-
     @Override
     protected void onPause() {
         super.onPause();
     }
-
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -394,9 +364,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 @Override
                 public void run() {
                     mMap.clear();
-                    DatabaseReference lat = firebaseDatabase.getReference("buses").child("bus number " + ebusnumber.getText().toString()).child("round number " + eroundnumber.getText().toString()).child("lat");
+                    DatabaseReference lat = firebaseDatabase.getReference("buses").child(city.getSelectedItem().toString()).child("bus number " + ebusnumber.getText().toString()).child("round number " + eroundnumber.getText().toString()).child("lat");
                     lat.setValue(getLat() + "");
-                    DatabaseReference lng = firebaseDatabase.getReference("buses").child("bus number " + ebusnumber.getText().toString()).child("round number " + eroundnumber.getText().toString()).child("lng");
+                    DatabaseReference lng = firebaseDatabase.getReference("buses").child(city.getSelectedItem().toString()).child("bus number " + ebusnumber.getText().toString()).child("round number " + eroundnumber.getText().toString()).child("lng");
                     lng.setValue(getLng() + "");
                     LatLng buspos = new LatLng(getLat(), getLng());
                     mMap.addMarker(new MarkerOptions().position(buspos));

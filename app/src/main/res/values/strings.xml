@@ -4,4 +4,11 @@
     <string name="stop_updates">STOP LOCATION UPDATES</string>
     <string name="get_last_location">GET LAST LOCATION</string>
     <string name="title_activity_maps">Map</string>
+
+    <string-array name="city">
+        <item name ="Zarqa">Zarqa</item>
+        <item name ="Amman">Amman</item>
+        <item name ="Mafrak">Mafrak</item>
+        <item name ="Irbid">Irbid</item>
+    </string-array>
 </resources>

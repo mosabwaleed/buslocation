@@ -30,6 +30,12 @@
             android:ems="10"
             android:hint="round number"
             android:inputType="number" />
+
+        <Spinner
+            android:id="@+id/city"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:entries="@array/city" />
     </LinearLayout>
 
     <Button
