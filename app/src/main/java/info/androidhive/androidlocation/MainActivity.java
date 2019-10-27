@@ -20,7 +20,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.ApiException;
@@ -44,18 +43,18 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionDeniedResponse;
 import com.karumi.dexter.listener.PermissionGrantedResponse;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.single.PermissionListener;
-
-import java.text.DateFormat;
-import java.util.Date;
-
+import java.util.ArrayList;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -71,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     EditText ebusnumber,eroundnumber;
     Spinner city;
     Button stop;
-// for test
+    ArrayList<String> busnodb = new ArrayList<>() ;
     FirebaseDatabase firebaseDatabase;
     public double getLat() {
         return lat;
@@ -257,42 +256,65 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     @OnClick(R.id.btn_start_location_updates)
     public void startLocationButtonClick() {
-        String buno = ebusnumber.getText().toString();
-        String rono = eroundnumber.getText().toString();
-        if (!buno.matches("") && !rono.matches("")){
-            ebusnumber.setVisibility(View.GONE);
-            eroundnumber.setVisibility(View.GONE);
-            btnStartUpdates.setVisibility(View.GONE);
-            stop.setVisibility(View.VISIBLE);
-            city.setVisibility(View.GONE);
-            // Requesting ACCESS_FINE_LOCATION using Dexter library
-            Dexter.withActivity(this)
-                    .withPermission(Manifest.permission.ACCESS_FINE_LOCATION)
-                    .withListener(new PermissionListener() {
-                        @Override
-                        public void onPermissionGranted(PermissionGrantedResponse response) {
-                            mRequestingLocationUpdates = true;
-                            startLocationUpdates();
-                            onMapReady(mMap);
-                        }
-                        @Override
-                        public void onPermissionDenied(PermissionDeniedResponse response) {
-                            if (response.isPermanentlyDenied()) {
-                                // open device settings when the permission is
-                                // denied permanently
-                                openSettings();
-                            }
-                        }
-                        @Override
-                        public void onPermissionRationaleShouldBeShown(PermissionRequest permission, PermissionToken token) {
-                            token.continuePermissionRequest();
-                        }
-                    }).check();
-        }
-        else{
-            Toast.makeText(MainActivity.this,"please fill bus number and round number",Toast.LENGTH_LONG).show();
-            btnStartUpdates.setEnabled(true);
-        }
+        busnodb.clear();
+        firebaseDatabase.getReference("buses").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot dscity : dataSnapshot.getChildren()){
+                    for(DataSnapshot dsno : dscity.getChildren()){
+                        busnodb.add(dsno.getKey());
+                    }
+                }
+                String buno = ebusnumber.getText().toString();
+                String rono = eroundnumber.getText().toString();
+                if (!buno.matches("") && !rono.matches("")){
+                    if(!busnodb.contains("bus number " + buno)) {
+                        ebusnumber.setVisibility(View.GONE);
+                        eroundnumber.setVisibility(View.GONE);
+                        btnStartUpdates.setVisibility(View.GONE);
+                        stop.setVisibility(View.VISIBLE);
+                        city.setVisibility(View.GONE);
+                        // Requesting ACCESS_FINE_LOCATION using Dexter library
+                        Dexter.withActivity(MainActivity.this)
+                                .withPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                                .withListener(new PermissionListener() {
+                                    @Override
+                                    public void onPermissionGranted(PermissionGrantedResponse response) {
+                                        mRequestingLocationUpdates = true;
+                                        startLocationUpdates();
+                                        onMapReady(mMap);
+                                    }
+
+                                    @Override
+                                    public void onPermissionDenied(PermissionDeniedResponse response) {
+                                        if (response.isPermanentlyDenied()) {
+                                            // open device settings when the permission is
+                                            // denied permanently
+                                            openSettings();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onPermissionRationaleShouldBeShown(PermissionRequest permission, PermissionToken token) {
+                                        token.continuePermissionRequest();
+                                    }
+                                }).check();
+                    }
+                    else {
+                        Toast.makeText(MainActivity.this,"the bus number is already exist",Toast.LENGTH_LONG).show();
+                        btnStartUpdates.setEnabled(true);
+                    }
+                }
+                else{
+                    Toast.makeText(MainActivity.this,"please fill bus number and round number",Toast.LENGTH_LONG).show();
+                    btnStartUpdates.setEnabled(true);
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
+
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -389,4 +411,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
     }
+
+    public void getbusnodb (){
+
+    }
+
 }
