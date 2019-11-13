@@ -17,6 +17,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -35,6 +36,7 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
@@ -48,6 +50,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionDeniedResponse;
@@ -72,6 +75,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     Button stop;
     ArrayList<String> busnodb = new ArrayList<>() ;
     FirebaseDatabase firebaseDatabase;
+    FirebaseFirestore firestore;
+    String citystr = "";
     public double getLat() {
         return lat;
     }
@@ -107,8 +112,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
+//        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+//                .findFragmentById(R.id.map);
+        MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         ebusnumber = findViewById(R.id.busnumber);
         eroundnumber = findViewById(R.id.roundnumber);
@@ -267,6 +273,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
                 String buno = ebusnumber.getText().toString();
                 String rono = eroundnumber.getText().toString();
+
+                if (city.getSelectedItem().toString().equalsIgnoreCase("zarqa")){
+                    citystr = "zarqa";
+                }
+                else if(city.getSelectedItem().toString().equalsIgnoreCase("university mosque")){
+                    citystr = "mosq";
+                }
+                else {
+                    citystr = city.getSelectedItem().toString();
+                }
+                firestore.collection(citystr).document();
                 if (!buno.matches("") && !rono.matches("")){
                     if(!busnodb.contains("bus number " + buno)) {
                         ebusnumber.setVisibility(View.GONE);
