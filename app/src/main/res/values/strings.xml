@@ -7,13 +7,13 @@
 
     <string-array name="city">
         <item name ="Zarqa">Zarqa</item>
-        <item name ="tabrbor+istiklal">tabrbor+istiklal</item>
+        <item name ="tabrbor+istiklal">tabrbor&amp;istiklal</item>
         <item name ="raghadan">raghadan</item>
         <item name ="irbid">irbid</item>
-        <item name ="balaama+hashmeh">balaama+hashmeh</item>
+        <item name ="balaama+hashmeh">balaama&amp;hashmeh</item>
         <item name ="mosq">university mosque</item>
         <item name ="azraq">azraq</item>
-        <item name ="gomrok+sahab">gomrok+sahab</item>
+        <item name ="gomrok+sahab">gomrok&amp;sahab</item>
         <item name ="jerash">jerash</item>
         <item name ="mafraq">mafraq</item>
         <item name ="salt">salt</item>

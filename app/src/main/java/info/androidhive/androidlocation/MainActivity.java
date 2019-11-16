@@ -12,12 +12,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -50,7 +49,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionDeniedResponse;
@@ -58,6 +60,8 @@ import com.karumi.dexter.listener.PermissionGrantedResponse;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.single.PermissionListener;
 import java.util.ArrayList;
+import java.util.Calendar;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -76,7 +80,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     ArrayList<String> busnodb = new ArrayList<>() ;
     FirebaseDatabase firebaseDatabase;
     FirebaseFirestore firestore;
-    String citystr = "";
+    String citystr , days , message = "";
+
     public double getLat() {
         return lat;
     }
@@ -112,15 +117,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-//        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-//                .findFragmentById(R.id.map);
-        MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+//        MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         ebusnumber = findViewById(R.id.busnumber);
         eroundnumber = findViewById(R.id.roundnumber);
         city = findViewById(R.id.city);
         stop = findViewById(R.id.stop);
         firebaseDatabase = FirebaseDatabase.getInstance();
+        firestore = FirebaseFirestore.getInstance();
         // initialize the necessary libraries
         init();
         // restore the values from saved instance state
@@ -206,10 +212,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         String buno = ebusnumber.getText().toString();
         String rono = eroundnumber.getText().toString();
         if (mRequestingLocationUpdates&&!buno.matches("") && !rono.matches("")) {
-            btnStartUpdates.setEnabled(false);
+            btnStartUpdates.setEnabled(true);
 
         } else {
-            btnStartUpdates.setEnabled(true);
+            btnStartUpdates.setEnabled(false);
 
         }
     }
@@ -272,10 +278,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 }
                 String buno = ebusnumber.getText().toString();
-                String rono = eroundnumber.getText().toString();
+                final String rono = eroundnumber.getText().toString();
 
                 if (city.getSelectedItem().toString().equalsIgnoreCase("zarqa")){
-                    citystr = "zarqa";
+                    citystr = "";
                 }
                 else if(city.getSelectedItem().toString().equalsIgnoreCase("university mosque")){
                     citystr = "mosq";
@@ -283,7 +289,29 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 else {
                     citystr = city.getSelectedItem().toString();
                 }
-                firestore.collection(citystr).document();
+                Calendar calendar = Calendar.getInstance();
+                int day = calendar.get(Calendar.DAY_OF_WEEK);
+
+                switch (day) {
+                    case Calendar.SUNDAY:
+                    case Calendar.TUESDAY:
+                    case Calendar.THURSDAY:
+                        days = "stuth";
+                        break;
+                    case Calendar.MONDAY:
+                    case Calendar.WEDNESDAY:
+                        days = "mw";
+                        break;
+                    default:
+                        days = "";
+                        break;
+                }
+                if (!citystr.matches("")&&!days.matches("")) {
+                    firestore.collection(citystr).document(days).addSnapshotListener((documentSnapshot, e) -> {
+                        message = "Your Round started at " + documentSnapshot.get(rono);
+                        Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
+                    });
+                }
                 if (!buno.matches("") && !rono.matches("")){
                     if(!busnodb.contains("bus number " + buno)) {
                         ebusnumber.setVisibility(View.GONE);
@@ -335,6 +363,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             // Check for the integer request code originally supplied to startResolutionForResult().
             case REQUEST_CHECK_SETTINGS:
@@ -385,6 +414,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap = googleMap;
         String buno = ebusnumber.getText().toString();
         String rono = eroundnumber.getText().toString();
+        mMap.setMyLocationEnabled(true);
         if (!buno.matches("") && !rono.matches("")) {
             Runnable runnable = new Runnable() {
                 @Override
@@ -427,10 +457,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 });
             }
         });
-    }
-
-    public void getbusnodb (){
-
     }
 
 }
